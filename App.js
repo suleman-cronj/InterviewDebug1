@@ -1,46 +1,44 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   Text,
-  TextInput,
-  TouchableOpacity,
   FlatList,
   StyleSheet,
-  SafeAreaView,
+  ActivityIndicator,
 } from 'react-native';
 
-const ListItem = ({item}) => (
-  <View style={styles.listItem}>
-    <Text style={styles.itemText}>{item}</Text>
+const User = ({user}) => (
+  <View style={styles.user}>
+    <Text style={styles.name}>{user.name}</Text>
   </View>
 );
 
 const App = () => {
-  const [text, setText] = useState('');
-  const [items, setItems] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleAddItem = () => {
-    setItems([...items, text]);
-    setText('');
-  };
+  useEffect(() => {
+    fetch('https://jsonplaceholder.typicode.com/users')
+      .then(response => response.json())
+      .then(data => {
+        setUsers(data);
+        setLoading(false);
+      })
+      .catch(error => console.error(error));
+  });
 
   return (
-    <SafeAreaView style={styles.container}>
-      <TextInput
-        style={styles.input}
-        placeholder="Type something"
-        onChangeText={setText}
-        value={text}
-      />
-      <TouchableOpacity onPress={handleAddItem} style={styles.button}>
-        <Text style={styles.buttonText}>Add Item</Text>
-      </TouchableOpacity>
-      <FlatList
-        data={items}
-        renderItem={({item}) => <ListItem />}
-        keyExtractor={(item, index) => index.toString()}
-      />
-    </SafeAreaView>
+    <View style={styles.container}>
+      {loading ? (
+        <ActivityIndicator size="large" color="#0000ff" />
+      ) : (
+        <FlatList
+          data={users}
+          renderItem={item => <User />}
+          keyExtractor={user => user.id}
+        />
+      )}
+    </View>
   );
 };
 
@@ -50,30 +48,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  input: {
-    borderWidth: 1,
-    borderColor: 'black',
-    width: '80%',
-    paddingHorizontal: 8,
-    marginBottom: 16,
-  },
-  button: {
-    backgroundColor: 'blue',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 4,
-  },
-  buttonText: {
-    color: 'white',
-    fontWeight: 'bold',
-  },
-  listItem: {
+  user: {
     backgroundColor: 'lightgray',
     padding: 16,
     marginVertical: 8,
     borderRadius: 4,
   },
-  itemText: {
+  name: {
     fontSize: 16,
   },
 });
